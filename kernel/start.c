@@ -20,6 +20,20 @@ extern void timervec();
 void
 start()
 {
+  extern char startbss[], end[];
+  // Clear the BSS in case we came from gdb which doesn't do it.
+  memset(startbss, 0, end-startbss);
+  // Set up a PMP to permit access to all of memory.
+  // Ignore the illegal-instruction trap if PMPs aren't supported.
+  unsigned long pmpc = PMP_NAPOT | PMP_R | PMP_W | PMP_X;
+  asm volatile ("la t0, 1f\n\t"
+                "csrrw t0, mtvec, t0\n\t"
+                "csrw pmpaddr0, %1\n\t"
+                "csrw pmpcfg0, %0\n\t"
+                ".align 2\n\t"
+                "1: csrw mtvec, t0"
+                : : "r" (pmpc), "r" (-1UL) : "t0");
+
   // set M Previous Privilege mode to Supervisor, for mret.
   unsigned long x = r_mstatus();
   x &= ~MSTATUS_MPP_MASK;
@@ -45,6 +59,7 @@ start()
   w_tp(id);
 
   // switch to supervisor mode and jump to main().
+  asm volatile("fence");
   asm volatile("mret");
 }
 

@@ -13,7 +13,7 @@
 // the UART control registers are memory-mapped
 // at address UART0. this macro returns the
 // address of one of the registers.
-#define Reg(reg) ((volatile unsigned char *)(UART0 + reg))
+#define Reg(reg) ((volatile unsigned char *)(UART0 + reg*4))
 
 // the UART control registers.
 // some have different meanings for
@@ -33,6 +33,10 @@
 void
 uartinit(void)
 {
+  uint32 uart16550_clock = 50000000;
+  uint32 UART_DEFAULT_BAUD = 115200;
+  uint32 divisor = uart16550_clock / (16 * UART_DEFAULT_BAUD);
+  
   // disable interrupts.
   WriteReg(IER, 0x00);
 
@@ -40,10 +44,10 @@ uartinit(void)
   WriteReg(LCR, 0x80);
 
   // LSB for baud rate of 38.4K.
-  WriteReg(0, 0x03);
+  WriteReg(0, divisor);
 
   // MSB for baud rate of 38.4K.
-  WriteReg(1, 0x00);
+  WriteReg(1, divisor >> 8);
 
   // leave set-baud mode,
   // and set word length to 8 bits, no parity.

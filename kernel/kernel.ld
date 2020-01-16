@@ -25,6 +25,7 @@ SECTIONS
     *(.data)
     *(.ramdisk)
   }
+  PROVIDE(startbss = .);
   .bss : {
     *(.bss)
     *(.sbss*)
