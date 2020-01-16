@@ -24,3 +24,7 @@ _entry:
         call start
 junk:
         j junk
+.section .ramdisk
+.globl _ramdiskbase
+_ramdiskbase:
+        .incbin "fs.img"

@@ -23,6 +23,7 @@ SECTIONS
    */
   .data : {
     *(.data)
+    *(.ramdisk)
   }
   .bss : {
     *(.bss)
